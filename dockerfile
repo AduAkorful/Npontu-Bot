@@ -4,7 +4,7 @@ FROM python:3.9-bullseye AS builder
 # Set working directory
 WORKDIR /app
 
-# Copy only requirements.txt to leverage Docker's caching mechanism
+# Copy requirements file first for caching
 COPY requirements.txt /app/requirements.txt
 
 # Install system dependencies and Python libraries
@@ -24,15 +24,13 @@ FROM python:3.9-bullseye
 # Set working directory
 WORKDIR /app
 
-# Copy dependencies from the builder stage
+# Copy installed dependencies and application code
 COPY --from=builder /usr/local/lib/python3.9/site-packages /usr/local/lib/python3.9/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
-
-# Copy the application code
 COPY . /app
 
 # Expose the application port
 EXPOSE 5000
 
-# Command to run the application
+# Start the application
 CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
