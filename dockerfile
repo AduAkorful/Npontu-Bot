@@ -1,30 +1,30 @@
 # Stage 1: Install dependencies
-FROM python:3.9-bullseye AS builder
+FROM python:3.9-slim AS builder
 
 # Set working directory
 WORKDIR /app
 
-# Copy requirements file first for caching
-COPY requirements.txt /app/requirements.txt
-
-# Install system dependencies and Python libraries
+# Install required system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     libpq-dev \
     libffi-dev \
-    python3-dev \
     build-essential \
-    && apt-get clean && rm -rf /var/lib/apt/lists/* \
-    && pip install --no-cache-dir --upgrade pip setuptools \
+    python3-dev \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+COPY requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir --upgrade pip setuptools \
     && pip install --no-cache-dir -r requirements.txt
 
-# Stage 2: Build the final image
-FROM python:3.9-bullseye
+# Stage 2: Final image
+FROM python:3.9-slim
 
 # Set working directory
 WORKDIR /app
 
-# Copy installed dependencies and application code
+# Copy dependencies and application code from the builder
 COPY --from=builder /usr/local/lib/python3.9/site-packages /usr/local/lib/python3.9/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 COPY . /app
