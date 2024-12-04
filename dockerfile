@@ -1,4 +1,4 @@
-# Use a minimal Python base image
+# Use a lightweight Python base image
 FROM python:3.9-slim
 
 # Set the working directory
@@ -13,10 +13,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Copy the requirements file
+# Copy requirements and install globally
 COPY requirements.txt /app/requirements.txt
-
-# Install Python dependencies globally
 RUN pip install --no-cache-dir --upgrade pip setuptools \
     && pip install --no-cache-dir -r requirements.txt
 
@@ -26,5 +24,5 @@ COPY . /app
 # Expose the application port
 EXPOSE 5000
 
-# Command to start the application
+# Start the application
 CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
