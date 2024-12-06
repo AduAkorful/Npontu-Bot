@@ -76,18 +76,17 @@ def connect_rabbitmq():
 class TimeoutException(Exception):
     pass
 
-def set_request_timeout(app, timeout_seconds):
-    @app.before_request
 
 def set_request_timeout(app, timeout_seconds):
-    @bp.before_request
+    @app.before_request
     def before_request():
         signal.signal(signal.SIGALRM, timeout_handler)
         signal.alarm(timeout_seconds)
 
-    @bp.teardown_request
+    @app.teardown_request
     def teardown_request(exception=None):
         signal.alarm(0)  # Disable the alarm
+
 def publish_message(message):
     channel = connect_rabbitmq()
     if channel:
