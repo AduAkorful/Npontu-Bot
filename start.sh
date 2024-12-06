@@ -7,4 +7,4 @@ PORT=${PORT:-5000}
 echo "Starting application on port: $PORT"
 
 # Start the Gunicorn server
-exec gunicorn app:app --bind 0.0.0.0:$PORT -w 4
+exec gunicorn back:app --bind 0.0.0.0:$PORT -w 4
