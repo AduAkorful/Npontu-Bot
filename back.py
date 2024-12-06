@@ -130,9 +130,15 @@ def handle_token_exchange(authorization_response):
 
 # Google OAuth Integration
 def get_oauth_flow():
-    logging.info(f"Using CLIENT_SECRET_FILE at {Config.CLIENT_SECRET_FILE}")
-    return Flow.from_client_secrets_file(
-        Config.CLIENT_SECRET_FILE,
+    logging.info("Decoding client secret from encoded environment variable.")
+    try:
+        # Decode the JSON content from the encoded environment variable
+        client_config = json.loads(base64.b64decode(os.getenv("ENCODED_CLIENT_SECRET")).decode('utf-8'))
+    except Exception as e:
+        raise ValueError(f"Failed to decode ENCODED_CLIENT_SECRET: {e}")
+    
+    return Flow.from_client_config(
+        client_config,
         scopes=Config.OAUTH_SCOPES,
         redirect_uri=Config.OAUTH_REDIRECT_URI
     )
