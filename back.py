@@ -7,6 +7,7 @@ from flask_sqlalchemy import SQLAlchemy
 from pymongo import MongoClient
 import pika
 import requests
+import base64
 from dotenv import load_dotenv
 from flask_caching import Cache
 import logging
@@ -221,6 +222,18 @@ def refresh_access_token(refresh_token):
     else:
         return {"error": response.json()}
 
+def write_client_secret():
+    encoded_secret = os.getenv("ENCODED_CLIENT_SECRET")
+    if not encoded_secret:
+        raise ValueError("Encoded client secret is missing in environment variables.")
+    try:
+        decoded_secret = base64.b64decode(encoded_secret).decode('utf-8')
+        with open(Config.CLIENT_SECRET_FILE, 'w') as f:
+            f.write(decoded_secret)
+        logging.info("Client secret file written successfully.")
+    except Exception as e:
+        logging.error(f"Failed to write client secret: {e}")
+        raise
 
 
 
@@ -229,6 +242,8 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
+    # Write the client_secret.json file
+    write_client_secret()
     # Initialize extensions
     db.init_app(app)
     cache.init_app(app)
