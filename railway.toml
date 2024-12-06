@@ -5,7 +5,7 @@ watchPatterns = [
     "requirements.txt",
     "app/**",
     "railway.toml",
-    "Dockerfile",
+    "dockerfile",
 ]
 
 [deploy]
