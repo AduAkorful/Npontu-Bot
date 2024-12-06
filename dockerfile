@@ -33,4 +33,5 @@ RUN chmod +x /app/start.sh
 EXPOSE 5000
 
 # Use a shell script to handle PORT or default
-CMD ["sh", "-c", "exec gunicorn app:app --bind 0.0.0.0:${PORT:-5000} -w 4"]
+CMD ["/app/start.sh"]
+
