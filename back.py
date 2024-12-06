@@ -75,7 +75,9 @@ def connect_rabbitmq():
 # Timeout Integration
 class TimeoutException(Exception):
     pass
-
+    
+def timeout_handler(signum, frame):
+    raise TimeoutException("Request timed out")
 
 def set_request_timeout(app, timeout_seconds):
     @app.before_request
@@ -231,17 +233,16 @@ def create_app():
     db.init_app(app)
     cache.init_app(app)
 
-
-    # configuring  CORS
+    # Configuring CORS dynamically (use Railway or production domains if necessary)
     from flask_cors import CORS
-
-    CORS(bp, resources={r"/api/*": {"origins": "https://192.168.1.234:5000"}})
-
+    CORS(app, resources={r"/api/*": {"origins": os.getenv("CORS_ORIGIN", "*")}})
 
     # Register blueprint
     app.register_blueprint(bp)
-# Set global timeout
-    set_request_timeout(app, 15)
+
+    # Set global timeout
+    set_request_timeout(app, int(os.getenv("REQUEST_TIMEOUT", 15)))
+
     return app
 
 if __name__ == '__main__':
