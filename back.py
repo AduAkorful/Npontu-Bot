@@ -8,6 +8,7 @@ from pymongo import MongoClient
 import pika
 import requests
 import base64
+import json
 from dotenv import load_dotenv
 from flask_caching import Cache
 import logging
