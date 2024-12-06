@@ -24,10 +24,10 @@ RUN pip install --no-cache-dir --upgrade pip setuptools \
     && pip install --no-cache-dir -r /app/requirements.txt
 
 # Copy application code
-COPY . /back
+COPY . /app
 
 # Make the start script executable (if used)
-RUN chmod +x /back/start.sh
+RUN chmod +x /app/start.sh
 
 # Expose the application port
 EXPOSE 5000
