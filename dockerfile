@@ -30,7 +30,8 @@ COPY . /app
 EXPOSE 5000
 
 # Default command to run the application
-CMD ["sh", "-c", "gunicorn app:app --bind 0.0.0.0:${PORT:-5000} -w 4"]
+CMD ["sh", "-c", "exec gunicorn app:app --bind 0.0.0.0:${PORT:-5000} -w 4"]
+
 
 
 
