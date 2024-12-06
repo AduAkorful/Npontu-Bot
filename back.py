@@ -245,6 +245,6 @@ def create_app():
     set_request_timeout(app, 15)
     return app
 
-# python web server
 if __name__ == '__main__':
-    app.run(debug=True, port=os.getenv("PORT", default=5000))
+    app = create_app()
+    app.run(debug=True, host='0.0.0.0', port=5000)  # Specify the host and port
