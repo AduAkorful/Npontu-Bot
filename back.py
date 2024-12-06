@@ -247,7 +247,4 @@ def create_app():
 
 if __name__ == '__main__':
     app = create_app()
-    # Use the PORT environment variable with a default fallback to 5000
-    port = int(os.getenv("PORT", 5000))
-    app.run(debug=True, host='0.0.0.0', port=port)
-
+    app.run(debug=True, host='0.0.0.0', port=5000)  # Specify the host and port
