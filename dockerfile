@@ -24,7 +24,7 @@ RUN pip install --no-cache-dir --upgrade pip setuptools \
     && pip install --no-cache-dir -r /app/requirements.txt
 
 # Decode and create the client_secret.json file from the environment variable
-RUN echo $CLIENT_SECRET_JSON | base64 -d > /app/client_secret.json
+ENV CLIENT_SECRET_JSON_B64="eyJ3ZWIiOnsiY2xpZW50X2lkIjoiODY5MTU5NTA2Mjc4LWZvb3RnbTF2ZTllMnJnNTJsaWdsazUybGExcjJjazJpLmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwicHJvamVjdF9pZCI6Imdlbi1sYW5nLWNsaWVudC0wMzMxMDcxODMzIiwiYXV0aF91cmkiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20vby9vYXV0aDIvYXV0aCIsInRva2VuX3VyaSI6Imh0dHBzOi8vb2F1dGgyLmdvb2dsZWFwaXMuY29tL3Rva2VuIiwiYXV0aF9wcm92aWRlcl94NTA5X2NlcnRfdXJsIjoiaHR0cHM6Ly93d3cuZ29vZ2xlYXBpcy5jb20vb2F1dGgyL3YxL2NlcnRzIiwiY2xpZW50X3NlY3JldCI6IkdPQ1NQWC1pbEktSmRPdGVUeTZlVnNkVlBNUHlLMTYwanlUIiwicmVkaXJlY3RfdXJpcyI6WyJodHRwczovL2phY2thbC1zdWl0YWJsZS1tYW5hdGVlLm5ncm9rLWZyZWUuYXBwIl19fQ=="
 
 # Copy application code
 COPY . /app
