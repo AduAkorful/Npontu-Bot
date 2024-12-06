@@ -23,6 +23,9 @@ COPY requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir --upgrade pip setuptools \
     && pip install --no-cache-dir -r /app/requirements.txt
 
+# Decode and create the client_secret.json file from the environment variable
+RUN echo $CLIENT_SECRET_JSON | base64 -d > /app/client_secret.json
+
 # Copy application code
 COPY . /app
 
