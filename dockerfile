@@ -1,28 +1,24 @@
-# Use a lightweight Python base image
-FROM python:3.9-slim
+# Use the official lightweight Python image
+FROM python:3.12-slim
 
-# Set the working directory
+# Set the working directory inside the container
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
-    libpq-dev \
-    libffi-dev \
-    python3-dev \
-    build-essential \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+# Copy the requirements file and install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy requirements and install globally
-COPY requirements.txt /app/requirements.txt
-RUN pip install --no-cache-dir --upgrade pip setuptools \
-    && pip install --no-cache-dir -r requirements.txt
+# Copy the rest of the application code
+COPY . .
 
-# Copy application code
-COPY . /app
+# Ensure the client_secret.json file has appropriate permissions
+RUN chmod 644 /app/client_secret.json
 
-# Expose the application port
+# Expose the port the application runs on
 EXPOSE 5000
 
-# Start the application
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
+# Set environment variables, if needed
+# ENV FLASK_APP=back.py
+
+# Use Gunicorn to serve the application
+CMD ["gunicorn", "-b", "0.0.0.0:5000", "back:create_app()"]
