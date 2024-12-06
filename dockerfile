@@ -26,13 +26,11 @@ RUN pip install --no-cache-dir --upgrade pip setuptools \
 # Copy application code
 COPY . /app
 
+# Make the start script executable (if used)
+RUN chmod +x /app/start.sh
+
 # Expose the application port
 EXPOSE 5000
 
-# Default command to run the application
+# Use a shell script to handle PORT or default
 CMD ["sh", "-c", "exec gunicorn app:app --bind 0.0.0.0:${PORT:-5000} -w 4"]
-
-
-
-
-
