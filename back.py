@@ -7,11 +7,10 @@ from flask_sqlalchemy import SQLAlchemy
 from pymongo import MongoClient
 import pika
 import requests
-import base64
-import json
 from dotenv import load_dotenv
 from flask_caching import Cache
 import logging
+import json
 from google_auth_oauthlib.flow import Flow
 from flask_cors import CORS   # Import CORS
 
@@ -38,14 +37,14 @@ class Config:
     
     # Use absolute path for client_secret.json
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Get directory of the current script
-    CLIENT_SECRET_FILE = os.path.join(BASE_DIR, "client_secret.json")  # Combine with the file name
+    CLIENT_SECRET_JSON = os.getenv("CLIENT_SECRET_JSON")  # Load JSON content directly
     OAUTH_REDIRECT_URI = "https://jackal-suitable-manatee.ngrok-free.app"
     OAUTH_SCOPES = ['openid', 'https://www.googleapis.com/auth/userinfo.email']
 
 
 # Ensure CLIENT_SECRET_FILE exists
-if not os.path.exists(Config.CLIENT_SECRET_FILE):
-    raise FileNotFoundError(f"CLIENT_SECRET_FILE not found at {Config.CLIENT_SECRET_FILE}")
+if not os.getenv("CLIENT_SECRET_JSON"):
+    raise ValueError("CLIENT_SECRET_JSON environment variable is missing.")
 
 # SQLAlchemy for SQL database
 db = SQLAlchemy()
@@ -131,18 +130,19 @@ def handle_token_exchange(authorization_response):
 
 # Google OAuth Integration
 def get_oauth_flow():
-    logging.info("Decoding client secret from encoded environment variable.")
+    logging.info("Using CLIENT_SECRET_JSON from environment.")
     try:
-        # Decode the JSON content from the encoded environment variable
-        client_config = json.loads(base64.b64decode(os.getenv("ENCODED_CLIENT_SECRET")).decode('utf-8'))
+        # Parse the JSON content from the environment variable
+        client_config = json.loads(Config.CLIENT_SECRET_JSON)
     except Exception as e:
-        raise ValueError(f"Failed to decode ENCODED_CLIENT_SECRET: {e}")
-    
+        raise ValueError(f"Invalid CLIENT_SECRET_JSON in environment: {e}")
+
     return Flow.from_client_config(
         client_config,
         scopes=Config.OAUTH_SCOPES,
         redirect_uri=Config.OAUTH_REDIRECT_URI
     )
+
 
 @bp.route('/test-model', methods=['POST'])
 def test_model():
@@ -229,18 +229,6 @@ def refresh_access_token(refresh_token):
     else:
         return {"error": response.json()}
 
-def write_client_secret():
-    encoded_secret = os.getenv("ENCODED_CLIENT_SECRET")
-    if not encoded_secret:
-        raise ValueError("Encoded client secret is missing in environment variables.")
-    try:
-        decoded_secret = base64.b64decode(encoded_secret).decode('utf-8')
-        with open(Config.CLIENT_SECRET_FILE, 'w') as f:
-            f.write(decoded_secret)
-        logging.info("Client secret file written successfully.")
-    except Exception as e:
-        logging.error(f"Failed to write client secret: {e}")
-        raise
 
 
 
@@ -249,8 +237,6 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    # Write the client_secret.json file
-    write_client_secret()
     # Initialize extensions
     db.init_app(app)
     cache.init_app(app)
