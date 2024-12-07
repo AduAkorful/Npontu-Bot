@@ -1,7 +1,21 @@
-# Use a lightweight Python base image
-FROM python:3.9-slim-bullseye
+# Multi-stage Dockerfile to handle both PHP frontend and Python backend
 
-# Set the working directory
+# Stage 1: Set up PHP for the frontend
+FROM php:8.1-apache AS frontend
+
+# Copy the PHP frontend file (index.php) to Apache's document root
+COPY index.php /var/www/html/
+
+# Optional: Copy assets like images, CSS, or JS if needed
+COPY static/ /var/www/html/static/
+
+# Enable Apache rewrite module if required
+RUN a2enmod rewrite
+
+# Stage 2: Set up Python for the backend
+FROM python:3.9-slim-bullseye AS backend
+
+# Set the working directory for the Python backend
 WORKDIR /app
 
 # Install system dependencies
@@ -18,22 +32,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-# Copy the requirements file and install dependencies
+# Copy the Python requirements file and install dependencies
 COPY requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir --upgrade pip setuptools \
     && pip install --no-cache-dir -r /app/requirements.txt
 
+# Copy the Python backend files
+COPY back.py /app/
+COPY start.sh /app/
 
-
-# Copy application code
-COPY . /app
-
-# Make the start script executable (if used)
+# Make the start script executable
 RUN chmod +x /app/start.sh
 
-# Expose the application port
+# Expose ports for PHP (frontend) and Python (backend)
+EXPOSE 80
 EXPOSE 5000
 
-# Use a shell script to handle PORT or default
+# Combine both PHP and Python setups
 CMD ["/app/start.sh"]
-
