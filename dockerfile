@@ -26,7 +26,7 @@ ENV LC_ALL C.UTF-8
 
 # Copy the PHP frontend code to the Apache root directory
 COPY index.php /var/www/html/
-COPY picture.png /var/www/html/
+COPY Picture.png /var/www/html/
 COPY bg.png /var/www/html/
 
 # Install Python dependencies
