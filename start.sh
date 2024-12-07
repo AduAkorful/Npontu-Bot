@@ -13,4 +13,4 @@ PORT=${PORT:-5000}
 which gunicorn || { echo "Gunicorn not found in PATH"; exit 1; }
 
 # Launch Gunicorn with the application factory
-exec gunicorn "back:create_app()" --bind "0.0.0.0:${PORT}" -w 4
+exec /usr/local/bin/gunicorn "back:create_app()" --bind "0.0.0.0:${PORT}" -w 4
