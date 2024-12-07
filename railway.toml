@@ -6,7 +6,7 @@ watchPatterns = [
     "index.php",
     "back.py",
     "bg.png",
-    "picture.png",
+    "Picture.png",
     "railway.toml",
     "dockerfile",
     "start.sh",
