@@ -1,5 +1,6 @@
 <?php
 $botName = "NpontuChat";
+$backendUrl = getenv("BACKEND_API_URL") ?: "https://npontu-bot-production.up.railway.app";
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -305,7 +306,7 @@ $botName = "NpontuChat";
 <script>
 
     
-
+  
   function toggleChat() {
   const chatContainer = document.querySelector('.chat-container');
   if (!chatContainer) {
@@ -605,12 +606,13 @@ function toggleSounds() {
 
         try {
           // Example API request - replace with your actual logic
-          const response = await fetch("https://example.com/api", {
+         const response = await fetch("https://npontu-bot-production.up.railway.app/api/v1/chat", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ message }),
-          });
+       });
 
+          const backendUrl = "<?php echo $backendUrl; ?>";
           const data = await response.json();
 
           chatContent.removeChild(loadingBubble);
