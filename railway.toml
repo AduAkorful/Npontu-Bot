@@ -1,0 +1,13 @@
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "./dockerfile"
+watchPatterns = [
+    "requirements.txt",
+    "back.py",
+    "railway.toml",
+    "dockerfile",
+    "start.sh",
+]
+
+[deploy]
+startCommand = "./start.sh"
