@@ -1,0 +1,10 @@
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "./Dockerfile.backend"
+
+[deploy]
+startCommand = "/app/start.sh"
+
+[env]
+FLASK_ENV = "production"
+REDIS_URL = "redis://redis:6379/0"
