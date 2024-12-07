@@ -174,18 +174,17 @@ def test_model():
         return {"error": "Model API call failed", "details": response.json()}, response.status_code
     except Exception as e:
         return {"error": str(e)}, 500
+        
 @bp.route('/api/v1/chat', methods=['POST'])
 def chat():
     data = request.get_json()
     user_message = data.get("message")
-    user_token = data.get("user_token")
+    user_token = data.get("user_token")  # Add token validation if needed
 
-    if not authenticate_with_gemini(user_token):
-        return jsonify({"error": "Authentication failed"}), 401
-
-    # Process user message (kept from your existing code)
+    # Process user message and return a response
     response = {"message": f"Processed message: {user_message}"}
     return jsonify(response)
+
 
 @bp.route('/')
 def home():
@@ -233,6 +232,7 @@ def refresh_access_token(refresh_token):
 
 
 # Main App
+
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
@@ -241,9 +241,8 @@ def create_app():
     db.init_app(app)
     cache.init_app(app)
 
-    # Configuring CORS dynamically (use Railway or production domains if necessary)
-    from flask_cors import CORS
-    CORS(app, resources={r"/api/*": {"origins": os.getenv("CORS_ORIGIN", "*")}})
+    # Enable CORS for your Railway domain
+    CORS(app, resources={r"/*": {"origins": "https://npontu-bot-production.up.railway.app"}})
 
     # Register blueprint
     app.register_blueprint(bp)
@@ -252,6 +251,7 @@ def create_app():
     set_request_timeout(app, int(os.getenv("REQUEST_TIMEOUT", 15)))
 
     return app
+
 
 if __name__ == '__main__':
     app = create_app()
