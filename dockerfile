@@ -1,24 +1,38 @@
-# Stage 1: Python dependencies
-FROM python:3.9-slim-bullseye as python-build
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Use a lightweight Python base image
+FROM python:3.9-slim-bullseye
 
-# Stage 2: PHP + Python
-FROM php:8.1-apache
+# Set the working directory
 WORKDIR /app
 
-# Install Python runtime
-RUN apt-get update && apt-get install -y python3 && apt-get clean
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libpq-dev \
+    libffi-dev \
+    python3-dev \
+    build-essential \
+    libjpeg-dev \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Copy Python dependencies
-COPY --from=python-build /usr/local/lib/python3.9/site-packages /usr/local/lib/python3.9/site-packages
+# Set Python environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+# Copy the requirements file and install dependencies
+COPY requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir --upgrade pip setuptools \
+    && pip install --no-cache-dir -r /app/requirements.txt
+
+
 
 # Copy application code
-COPY . .
+COPY . /app
 
-# Serve PHP and Python
-RUN a2enmod rewrite
-RUN echo "ProxyPass /api http://127.0.0.1:5000/" >> /etc/apache2/sites-enabled/000-default.conf
+# Make the start script executable (if used)
+RUN chmod +x /app/start.sh
 
+# Expose the application port
+EXPOSE 5000
+
+# Use a shell script to handle PORT or default
 CMD ["/app/start.sh"]
