@@ -1,52 +1,43 @@
-# Multi-stage Dockerfile to handle both PHP frontend and Python backend
+# Use a base image that supports both PHP and Python
+FROM php:8.1-apache
 
-# Stage 1: Set up PHP for the frontend
-FROM php:8.1-apache AS frontend
-
-# Copy the PHP frontend file (index.php) to Apache's document root
-COPY index.php /var/www/html/
-
-# Optional: Copy assets like images, CSS, or JS if needed
-COPY static/ /var/www/html/static/
-
-# Enable Apache rewrite module if required
-RUN a2enmod rewrite
-
-# Stage 2: Set up Python for the backend
-FROM python:3.9-slim-bullseye AS backend
-
-# Set the working directory for the Python backend
+# Set the working directory for the application
 WORKDIR /app
 
-# Install system dependencies
+# Install Python and required system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
+    python3 \
+    python3-pip \
     libpq-dev \
     libffi-dev \
     python3-dev \
+    gcc \
     build-essential \
     libjpeg-dev \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Set Python environment variables
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+# Copy the PHP frontend code to the Apache root directory
+COPY index.php /var/www/html/
+COPY assets /var/www/html/assets/
 
-# Copy the Python requirements file and install dependencies
+# Install Python dependencies
 COPY requirements.txt /app/requirements.txt
-RUN pip install --no-cache-dir --upgrade pip setuptools \
-    && pip install --no-cache-dir -r /app/requirements.txt
+RUN pip3 install --no-cache-dir --upgrade pip setuptools \
+    && pip3 install --no-cache-dir -r /app/requirements.txt
 
-# Copy the Python backend files
-COPY back.py /app/
-COPY start.sh /app/
+# Copy the Python backend code
+COPY . /app
+
+# Set up Apache to serve PHP and Gunicorn to serve the Python backend
+RUN a2enmod rewrite
+RUN echo "ProxyPass /api http://127.0.0.1:5000/" >> /etc/apache2/sites-enabled/000-default.conf
 
 # Make the start script executable
 RUN chmod +x /app/start.sh
 
-# Expose ports for PHP (frontend) and Python (backend)
+# Expose ports for both services
 EXPOSE 80
 EXPOSE 5000
 
-# Combine both PHP and Python setups
+# Start both Apache and Gunicorn
 CMD ["/app/start.sh"]
