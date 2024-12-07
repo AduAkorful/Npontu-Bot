@@ -3,6 +3,7 @@ builder = "DOCKERFILE"
 dockerfilePath = "./dockerfile"
 watchPatterns = [
     "requirements.txt",
+    "index.php",
     "back.py",
     "railway.toml",
     "dockerfile",
