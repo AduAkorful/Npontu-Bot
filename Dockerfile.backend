@@ -23,10 +23,10 @@ COPY requirements.txt /app/requirements.txt
 RUN pip3 install --no-cache-dir --upgrade pip setuptools wheel \
     && pip3 install --no-cache-dir -r /app/requirements.txt
 
-# Install gunicorn explicitly in case of PATH issues
+# Ensure gunicorn is installed
 RUN pip3 install gunicorn
 
-# Verify gunicorn installation
+# Verify gunicorn installation for debugging purposes
 RUN gunicorn --version
 
 # Copy application code
@@ -38,6 +38,5 @@ RUN chmod +x /app/start.sh
 # Expose the application port
 EXPOSE 5000
 
-# Use a shell script to handle PORT or default
+# Command to start the backend using the start script
 CMD ["/app/start.sh"]
-
