@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy the PHP frontend code to the Apache root directory
 COPY index.php /var/www/html/
 COPY bg.png /var/www/html/
-COPY picture.png /var/www/html/
+COPY Picture.png /var/www/html/
 
 # Install Python dependencies
 COPY requirements.txt /app/requirements.txt
