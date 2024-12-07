@@ -5,6 +5,8 @@ watchPatterns = [
     "requirements.txt",
     "index.php",
     "back.py",
+    "bg.png",
+    "picture.png",
     "railway.toml",
     "dockerfile",
     "start.sh",
