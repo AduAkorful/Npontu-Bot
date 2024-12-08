@@ -224,20 +224,17 @@ def refresh_access_token():
     payload = {
         "client_id": Config.CLIENT_ID,
         "client_secret": Config.CLIENT_SECRET,
-        "refresh_token": Config.REFRESH_TOKEN,
+        "refresh_token": os.getenv("REFRESH_TOKEN"),  # Retrieve from environment
         "grant_type": "refresh_token"
     }
     try:
         response = requests.post(token_url, data=payload)
         response.raise_for_status()
         tokens = response.json()
-        access_token = tokens.get("access_token")
-        expires_in = tokens.get("expires_in")
-
-        # Optionally, log or store the new access token
-        logging.info(f"Refreshed access token: {access_token}")
-
-        return access_token, expires_in
+        
+        # Save the refreshed access token and expiry (if needed)
+        logging.info(f"New access token: {tokens.get('access_token')}")
+        return tokens.get("access_token"), tokens.get("expires_in")
     except requests.RequestException as e:
         logging.error(f"Failed to refresh access token: {e}")
         return None, None
