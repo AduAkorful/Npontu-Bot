@@ -206,8 +206,9 @@ def oauth_callback():
         access_token = credentials.token
         refresh_token = credentials.refresh_token
 
-        # Save tokens for the user (use their email or unique ID)
-        save_tokens_to_db(user_id="user@example.com", access_token=access_token, refresh_token=refresh_token)
+        # Save tokens for the user
+        user_id = "user@example.com"  # Replace with a dynamic user identifier, such as their email
+        save_tokens_to_db(user_id=user_id, access_token=access_token, refresh_token=refresh_token)
 
         return {
             "access_token": access_token,
@@ -217,6 +218,7 @@ def oauth_callback():
     except Exception as e:
         logging.error(f"Error during token exchange: {e}")
         return {"error": str(e)}, 400
+
 
 
 def refresh_access_token():
@@ -239,6 +241,26 @@ def refresh_access_token():
         logging.error(f"Failed to refresh access token: {e}")
         return None, None
 
+def save_tokens_to_db(user_id, access_token, refresh_token):
+    """
+    Save the access and refresh tokens to the database for the user.
+
+    :param user_id: A unique identifier for the user (e.g., email or user ID)
+    :param access_token: The new access token
+    :param refresh_token: The new refresh token
+    """
+    try:
+        if mongo_db:
+            mongo_db.tokens.update_one(
+                {"user_id": user_id},
+                {"$set": {"access_token": access_token, "refresh_token": refresh_token}},
+                upsert=True
+            )
+            logging.info(f"Tokens successfully saved for user: {user_id}")
+        else:
+            logging.error("MongoDB connection is not established. Cannot save tokens.")
+    except Exception as e:
+        logging.error(f"Failed to save tokens to DB: {e}")
 
 
 
