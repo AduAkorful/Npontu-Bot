@@ -190,28 +190,35 @@ def chat():
 
 @bp.route('/')
 def home():
+    # Check if the user is authenticated (replace with your logic)
+    if 'user_token' in request.cookies:
+        return jsonify({"message": "User already authenticated."})
+
+    # If not authenticated, redirect to OAuth
     flow = get_oauth_flow()
     auth_url, _ = flow.authorization_url(prompt='consent')
     return redirect(auth_url)
 
+
 @bp.route('/oauth/callback')
 def oauth_callback():
     try:
-        # Initialize OAuth flow
         flow = get_oauth_flow()
         flow.fetch_token(authorization_response=request.url)
-
-        # Extract tokens
         credentials = flow.credentials
-        return {
+
+        # Set token as a cookie
+        response = jsonify({
             "access_token": credentials.token,
             "refresh_token": credentials.refresh_token,
             "expires_in": credentials.expiry.isoformat() if credentials.expiry else None,
-        }
+        })
+        response.set_cookie('user_token', credentials.token, httponly=True, samesite='Strict')
+        return response
     except Exception as e:
-        # Log the error for debugging
-        print(f"Error during token exchange: {str(e)}")
-        return {"error": str(e)}, 400
+        logging.error(f"Error during token exchange: {str(e)}")
+        return jsonify({"error": str(e)}), 400
+
 def refresh_access_token(refresh_token):
     """
     Refresh the access token using the refresh token.
