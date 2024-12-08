@@ -38,7 +38,7 @@ class Config:
     # Use absolute path for client_secret.json
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Get directory of the current script
     CLIENT_SECRET_JSON = os.getenv("CLIENT_SECRET_JSON")  # Load JSON content directly
-    OAUTH_REDIRECT_URI = "https://npontu-bot-production.up.railway.app"
+    OAUTH_REDIRECT_URI = "https://npontu-bot-production.up.railway.app/oauth/callback"
     OAUTH_SCOPES = ['openid', 'https://www.googleapis.com/auth/userinfo.email']
 
 
