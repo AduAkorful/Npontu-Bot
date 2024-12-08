@@ -210,11 +210,7 @@ def oauth_callback():
         user_id = "user@example.com"  # Replace with a dynamic user identifier, such as their email
         save_tokens_to_db(user_id=user_id, access_token=access_token, refresh_token=refresh_token)
 
-        return {
-            "access_token": access_token,
-            "refresh_token": refresh_token,
-            "expires_in": credentials.expiry.isoformat() if credentials.expiry else None,
-        }
+        return redirect("https://npontu-bot-frontend-production.up.railway.app/")
     except Exception as e:
         logging.error(f"Error during token exchange: {e}")
         return {"error": str(e)}, 400
