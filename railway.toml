@@ -5,6 +5,7 @@ watchPatterns = [
     "requirements.txt",
     "back.py",
     "railway.toml",
+    ".env",
     "dockerfile",
     "start.sh",
 ]
