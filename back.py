@@ -37,6 +37,8 @@ class Config:
     
     # Use absolute path for client_secret.json
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Get directory of the current script
+    CLIENT_ID = os.getenv("CLIENT_ID")
+    CLIENT_SECRET = os.getenv("CLIENT_SECRET")
     CLIENT_SECRET_JSON = os.getenv("CLIENT_SECRET_JSON")  # Load JSON content directly
     REFRESH_TOKEN = os.getenv("REFRESH_TOKEN")
     OAUTH_REDIRECT_URI = "https://npontu-bot-production.up.railway.app/oauth/callback"
@@ -159,23 +161,25 @@ def test_model():
         if not user_query:
             return jsonify({"error": "Query is required"}), 400
 
-        # Get the access token (refresh if necessary)
-        access_token, expires_in = refresh_access_token()
+        # Refresh or retrieve access token
+        access_token, _ = refresh_access_token()
         if not access_token:
             return jsonify({"error": "Failed to retrieve access token"}), 500
 
-        # Use the access token in your API call
+        # Call the Generative Language API
         headers = {"Authorization": f"Bearer {access_token}"}
         payload = {"query": user_query}
-        response = requests.post("https://gemini.api.endpoint/your-model-endpoint", headers=headers, json=payload)
+        response = requests.post("https://gemini-api.endpoint/your-model-endpoint", headers=headers, json=payload)
 
         if response.status_code == 200:
             return response.json()
         else:
+            logging.error(f"Model API call failed: {response.status_code}, {response.text}")
             return {"error": "Model API call failed", "details": response.json()}, response.status_code
     except Exception as e:
         logging.error(f"Error in /test-model: {e}")
         return {"error": str(e)}, 500
+
 
         
 @bp.route('/api/v1/chat', methods=['POST'])
@@ -193,14 +197,16 @@ def chat():
 
 @bp.route('/')
 def home():
-    # Check if the user is authenticated (replace with your logic)
-    if 'user_token' in request.cookies:
+    user_token = request.cookies.get('user_token')
+    if user_token:
+        # Optionally validate the token by checking its expiry or making a test API call.
         return jsonify({"message": "User already authenticated."})
 
-    # If not authenticated, redirect to OAuth
+    # Redirect to OAuth flow if no token
     flow = get_oauth_flow()
     auth_url, _ = flow.authorization_url(prompt='consent')
     return redirect(auth_url)
+
 
 
 @bp.route('/oauth/callback')
