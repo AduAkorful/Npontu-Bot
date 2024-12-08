@@ -38,6 +38,7 @@ class Config:
     # Use absolute path for client_secret.json
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Get directory of the current script
     CLIENT_SECRET_JSON = os.getenv("CLIENT_SECRET_JSON")  # Load JSON content directly
+    REFRESH_TOKEN = os.getenv("REFRESH_TOKEN")
     OAUTH_REDIRECT_URI = "https://npontu-bot-production.up.railway.app/oauth/callback"
     OAUTH_SCOPES = ['openid', 'https://www.googleapis.com/auth/userinfo.email']
 
@@ -147,33 +148,28 @@ def get_oauth_flow():
 @bp.route('/test-model', methods=['POST'])
 def test_model():
     try:
-        # Get the query from the request body
         user_query = request.json.get('query')
-
-        # Check if query is provided
         if not user_query:
-            return {"error": "Query is required"}, 400
+            return jsonify({"error": "Query is required"}), 400
 
-        # Define ACCESS_TOKEN (replace with actual token retrieval logic)
-        ACCESS_TOKEN = "your_access_token"
+        # Get the access token (refresh if necessary)
+        access_token, expires_in = refresh_access_token()
+        if not access_token:
+            return jsonify({"error": "Failed to retrieve access token"}), 500
 
-        # Use the access token to call the Gemini API
-        headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+        # Use the access token in your API call
+        headers = {"Authorization": f"Bearer {access_token}"}
         payload = {"query": user_query}
-
-        # Send the request to the Gemini API
         response = requests.post("https://gemini.api.endpoint/your-model-endpoint", headers=headers, json=payload)
 
-        # Return the model's response
         if response.status_code == 200:
             return response.json()
         else:
             return {"error": "Model API call failed", "details": response.json()}, response.status_code
     except Exception as e:
+        logging.error(f"Error in /test-model: {e}")
         return {"error": str(e)}, 500
-        return {"error": "Model API call failed", "details": response.json()}, response.status_code
-    except Exception as e:
-        return {"error": str(e)}, 500
+
         
 @bp.route('/api/v1/chat', methods=['POST'])
 def chat():
@@ -205,37 +201,46 @@ def oauth_callback():
     try:
         flow = get_oauth_flow()
         flow.fetch_token(authorization_response=request.url)
+
         credentials = flow.credentials
+        access_token = credentials.token
+        refresh_token = credentials.refresh_token
 
-        # Set token as a cookie
-        response = jsonify({
-            "access_token": credentials.token,
-            "refresh_token": credentials.refresh_token,
+        # Save tokens for the user (use their email or unique ID)
+        save_tokens_to_db(user_id="user@example.com", access_token=access_token, refresh_token=refresh_token)
+
+        return {
+            "access_token": access_token,
+            "refresh_token": refresh_token,
             "expires_in": credentials.expiry.isoformat() if credentials.expiry else None,
-        })
-        response.set_cookie('user_token', credentials.token, httponly=True, samesite='Strict')
-        return response
+        }
     except Exception as e:
-        logging.error(f"Error during token exchange: {str(e)}")
-        return jsonify({"error": str(e)}), 400
+        logging.error(f"Error during token exchange: {e}")
+        return {"error": str(e)}, 400
 
-def refresh_access_token(refresh_token):
-    """
-    Refresh the access token using the refresh token.
-    """
+
+def refresh_access_token():
     token_url = "https://oauth2.googleapis.com/token"
     payload = {
-        "client_id": "YOUR_CLIENT_ID",
-        "client_secret": "YOUR_CLIENT_SECRET",
-        "refresh_token": refresh_token,
+        "client_id": Config.CLIENT_ID,
+        "client_secret": Config.CLIENT_SECRET,
+        "refresh_token": Config.REFRESH_TOKEN,
         "grant_type": "refresh_token"
     }
-    response = requests.post(token_url, data=payload)
+    try:
+        response = requests.post(token_url, data=payload)
+        response.raise_for_status()
+        tokens = response.json()
+        access_token = tokens.get("access_token")
+        expires_in = tokens.get("expires_in")
 
-    if response.status_code == 200:
-        return response.json()  # New access token and expiry
-    else:
-        return {"error": response.json()}
+        # Optionally, log or store the new access token
+        logging.info(f"Refreshed access token: {access_token}")
+
+        return access_token, expires_in
+    except requests.RequestException as e:
+        logging.error(f"Failed to refresh access token: {e}")
+        return None, None
 
 
 
