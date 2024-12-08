@@ -232,18 +232,18 @@ def refresh_access_token(refresh_token):
 
 
 
-# Main App
+from flask_cors import CORS
+
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
+    # Enable CORS for the frontend URL
+    CORS(app, resources={r"/*": {"origins": ["https://npontu-bot-frontend-production.up.railway.app"]}})
+
     # Initialize extensions
     db.init_app(app)
     cache.init_app(app)
-
-    # Configuring CORS dynamically (use Railway or production domains if necessary)
-    from flask_cors import CORS
-    CORS(app, resources={r"/api/*": {"origins": os.getenv("CORS_ORIGIN", "*")}})
 
     # Register blueprint
     app.register_blueprint(bp)
@@ -252,6 +252,7 @@ def create_app():
     set_request_timeout(app, int(os.getenv("REQUEST_TIMEOUT", 15)))
 
     return app
+
 
 if __name__ == '__main__':
     app = create_app()
