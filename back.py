@@ -174,18 +174,19 @@ def test_model():
         return {"error": "Model API call failed", "details": response.json()}, response.status_code
     except Exception as e:
         return {"error": str(e)}, 500
+        
 @bp.route('/api/v1/chat', methods=['POST'])
 def chat():
     data = request.get_json()
+    logging.info(f"Received message: {data}")
+
     user_message = data.get("message")
-    user_token = data.get("user_token")
+    if not user_message:
+        return jsonify({"error": "Message is required"}), 400
 
-    if not authenticate_with_gemini(user_token):
-        return jsonify({"error": "Authentication failed"}), 401
-
-    # Process user message (kept from your existing code)
     response = {"message": f"Processed message: {user_message}"}
     return jsonify(response)
+
 
 @bp.route('/')
 def home():
@@ -239,19 +240,13 @@ def create_app():
     app.config.from_object(Config)
 
     # Enable CORS for the frontend URL
-    CORS(app, resources={r"/*": {"origins": ["https://npontu-bot-frontend-production.up.railway.app"]}})
+    CORS(app, resources={r"/*": {"origins": "https://npontu-bot-frontend-production.up.railway.app"}})
 
-    # Initialize extensions
-    db.init_app(app)
-    cache.init_app(app)
-
-    # Register blueprint
+    # Register blueprint and other settings
     app.register_blueprint(bp)
 
-    # Set global timeout
-    set_request_timeout(app, int(os.getenv("REQUEST_TIMEOUT", 15)))
-
     return app
+
 
 
 if __name__ == '__main__':
