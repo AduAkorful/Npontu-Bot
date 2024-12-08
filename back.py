@@ -40,7 +40,14 @@ class Config:
     CLIENT_SECRET_JSON = os.getenv("CLIENT_SECRET_JSON")  # Load JSON content directly
     REFRESH_TOKEN = os.getenv("REFRESH_TOKEN")
     OAUTH_REDIRECT_URI = "https://npontu-bot-production.up.railway.app/oauth/callback"
-    OAUTH_SCOPES = ['openid', 'https://www.googleapis.com/auth/userinfo.email']
+    OAUTH_SCOPES = [
+    'openid',
+    'https://www.googleapis.com/auth/userinfo.email',
+    'https://www.googleapis.com/auth/userinfo.profile',
+    'https://www.googleapis.com/auth/generative-language.tuning',
+    'https://www.googleapis.com/auth/generative-language.retriever'
+]
+
 
 
 # Ensure CLIENT_SECRET_FILE exists
