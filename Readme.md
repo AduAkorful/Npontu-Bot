@@ -96,34 +96,6 @@ gunicorn -w 4 -b 0.0.0.0:5000 back:app
 
 For Docker, use the provided `dockerfile` and `start.sh`.
 
----
 
-## Development & Contribution
 
-- Fork and clone the repo
-- Install dependencies
-- Work on a branch, make PRs
-- Follow best practices: secrets in `.env`, no secrets in code
 
----
-
-## License
-
-This project is licensed under the MIT License.
-
----
-
-## Credits
-
-Developed and maintained by [Adu Akorful](https://github.com/AduAkorful).
-
----
-
-## Acknowledgments
-
-- [Flask](https://flask.palletsprojects.com/)
-- [Google Generative AI](https://ai.google.dev/)
-- [Railway](https://railway.app/)
-- [MongoDB](https://www.mongodb.com/)
-- [RabbitMQ](https://www.rabbitmq.com/)
-- [Redis](https://redis.io/)
